@@ -41,6 +41,7 @@
 &i2c0 {
 	/* Cannot be used together with spi1. */
 	status = "okay";
+	compatible = "nordic,nrf-i2c";
 	clock-frequency = <I2C_BITRATE_STANDARD>;
 	sda-pin = <26>;
 	scl-pin = <27>;
