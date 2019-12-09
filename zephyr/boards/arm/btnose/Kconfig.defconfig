@@ -1,0 +1,19 @@
+# Kconfig - btnose board configuration
+#
+
+if BOARD_btnose
+
+config BOARD
+	default "btnose"
+
+if I2C
+
+config I2C_0
+	default y
+
+endif # I2C
+
+config BT_CTLR
+	default BT
+
+endif # BOARD_btnose
