@@ -41,14 +41,14 @@
 &i2c0 {
 	/* Cannot be used together with spi1. */
 	status = "okay";
-	compatible = "nordic,nrf-i2c";
+	compatible = "nordic,nrf-twi";
 	clock-frequency = <I2C_BITRATE_STANDARD>;
 	sda-pin = <26>;
 	scl-pin = <27>;
 
-	hts221@BE {
+	hts221@be {
 		compatible = "st,hts221";
-		reg = <0xBE>;
+		reg = <0xbe>;
 		drdy-gpios = <&gpio0 10 0>;
 		label = "HTS221";
 	};
