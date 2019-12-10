@@ -1,7 +1,7 @@
 # Kconfig - btnose board configuration
 #
 
-if BOARD_btnose
+if BOARD_BTNOSE
 
 config BOARD
 	default "btnose"
@@ -16,4 +16,4 @@ endif # I2C
 config BT_CTLR
 	default BT
 
-endif # BOARD_btnose
+endif # BOARD_BTNOSE
