@@ -17,8 +17,12 @@
 #include <device.h>
 #include <drivers/sensor.h>
 
+#include <logging/log.h>
+
 #define DEVICE_NAME CONFIG_BT_DEVICE_NAME
 #define DEVICE_NAME_LEN (sizeof(DEVICE_NAME) - 1)
+
+LOG_MODULE_REGISTER(BTNOSE, LOG_LEVEL_DBG);
 
 /*
  * Set Advertisement data. Based on the Eddystone specification:
@@ -46,21 +50,21 @@ static const struct bt_data sd[] = {
 static void bt_ready(int err)
 {
 	if (err) {
-		printk("Bluetooth init failed (err %d)\n", err);
+		LOG_ERR("Bluetooth init failed (err %d)\n", err);
 		return;
 	}
 
-	printk("Bluetooth initialized\n");
+	LOG_INF("Bluetooth initialized\n");
 
 	/* Start advertising */
 	err = bt_le_adv_start(BT_LE_ADV_NCONN, ad, ARRAY_SIZE(ad),
 			      sd, ARRAY_SIZE(sd));
 	if (err) {
-		printk("Advertising failed to start (err %d)\n", err);
+		LOG_ERR("Advertising failed to start (err %d)\n", err);
 		return;
 	}
 
-	printk("Beacon started\n");
+	LOG_INF("Beacon started\n");
 }
 
 
@@ -70,28 +74,28 @@ static void process_sample(struct device *dev)
 	static unsigned int obs;
 	struct sensor_value temp, hum;
 	if (sensor_sample_fetch(dev) < 0) {
-		printk("Sensor sample update error\n");
+		LOG_ERR("Sensor sample update error\n");
 		return;
 	}
 
 	if (sensor_channel_get(dev, SENSOR_CHAN_AMBIENT_TEMP, &temp) < 0) {
-		printk("Cannot read HTS221 temperature channel\n");
+		LOG_ERR("Cannot read HTS221 temperature channel\n");
 		return;
 	}
 
 	if (sensor_channel_get(dev, SENSOR_CHAN_HUMIDITY, &hum) < 0) {
-		printk("Cannot read HTS221 humidity channel\n");
+		LOG_ERR("Cannot read HTS221 humidity channel\n");
 		return;
 	}
 
 	++obs;
-	printk("Observation:%u\n", obs);
+	LOG_INF("Observation:%u\n", obs);
 
 	/* display temperature */
-	printk("Temperature:%.1f C\n", sensor_value_to_double(&temp));
+	LOG_INF("Temperature:%.1f C\n", sensor_value_to_double(&temp));
 
 	/* display humidity */
-	printk("Relative Humidity:%.1f%%\n",
+	LOG_INF("Relative Humidity:%.1f%%\n",
 	       sensor_value_to_double(&hum));
 }
 
@@ -100,22 +104,25 @@ static void process_sample(struct device *dev)
 void main(void)
 {
 	int err;
-	printk("Starting Beacon Demo\n");
+	LOG_INF("Starting Beacon Demo\n");
 
 	struct device *dev = device_get_binding("HTS221");
 	if (dev == NULL) {
-		printk("Could not get HTS221 device\n");
+		LOG_ERR("Could not get HTS221 device\n");
 		return;
+	} else {
+		LOG_INF("HTS221 found\n");
 	}
 
 	/* Initialize the Bluetooth Subsystem */
-	err = bt_enable(bt_ready);
+/*	err = bt_enable(bt_ready);
 	if (err) {
-		printk("Bluetooth init failed (err %d)\n", err);
-	}
+		LOG_ERR("Bluetooth init failed (err %d)\n", err);
+	}*/
 
 	while (!IS_ENABLED(CONFIG_HTS221_TRIGGER)) {
 		process_sample(dev);
 		k_sleep(K_MSEC(2000));
+		LOG_DBG("...\n");
 	}
 }
