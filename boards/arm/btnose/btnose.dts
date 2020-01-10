@@ -46,9 +46,9 @@
 	sda-pin = <26>;
 	scl-pin = <27>;
 
-	hts221@be {
+	hts221@5f {
 		compatible = "st,hts221";
-		reg = <0xbe>;
+		reg = <0x5f>;
 		drdy-gpios = <&gpio0 10 0>;
 		label = "HTS221";
 	};
