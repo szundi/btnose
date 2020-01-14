@@ -50,21 +50,21 @@ static const struct bt_data sd[] = {
 static void bt_ready(int err)
 {
 	if (err) {
-		LOG_ERR("Bluetooth init failed (err %d)\n", err);
+		LOG_ERR("Bluetooth init failed (err %d)", err);
 		return;
 	}
 
-	LOG_INF("Bluetooth initialized\n");
+	LOG_INF("Bluetooth initialized");
 
 	/* Start advertising */
 	err = bt_le_adv_start(BT_LE_ADV_NCONN, ad, ARRAY_SIZE(ad),
 			      sd, ARRAY_SIZE(sd));
 	if (err) {
-		LOG_ERR("Advertising failed to start (err %d)\n", err);
+		LOG_ERR("Advertising failed to start (err %d)", err);
 		return;
 	}
 
-	LOG_INF("Beacon started\n");
+	LOG_INF("Beacon started");
 }
 
 
@@ -73,56 +73,69 @@ static void process_sample(struct device *dev)
 {
 	static unsigned int obs;
 	struct sensor_value temp, hum;
+
 	if (sensor_sample_fetch(dev) < 0) {
-		LOG_ERR("Sensor sample update error\n");
+		LOG_ERR("Sensor sample update error");
 		return;
 	}
 
 	if (sensor_channel_get(dev, SENSOR_CHAN_AMBIENT_TEMP, &temp) < 0) {
-		LOG_ERR("Cannot read HTS221 temperature channel\n");
+		LOG_ERR("Cannot read HTS221 temperature channel");
 		return;
 	}
 
 	if (sensor_channel_get(dev, SENSOR_CHAN_HUMIDITY, &hum) < 0) {
-		LOG_ERR("Cannot read HTS221 humidity channel\n");
+		LOG_ERR("Cannot read HTS221 humidity channel");
 		return;
 	}
 
 	++obs;
-	LOG_INF("Observation:%u\n", obs);
+
+#if 0
+	LOG_INF("Observation:%u", obs);
 
 	/* display temperature */
-	LOG_INF("Temperature:%.1f C\n", sensor_value_to_double(&temp));
+	LOG_INF("Temperature:%.1f C", sensor_value_to_double(&temp));
 
 	/* display humidity */
-	LOG_INF("Relative Humidity:%.1f%%\n",
-	       sensor_value_to_double(&hum));
+	LOG_INF("Relative Humidity:%.1f%%", sensor_value_to_double(&hum));
+#else
+	LOG_INF("Observation:%u: Temp(%d.%01uC), rH(%d%%)", 
+		obs, temp.val1, temp.val2/100000, hum.val1);
+#endif
+
 }
 
 
 
 void main(void)
 {
-	int err;
-	LOG_INF("Starting Beacon Demo\n");
+	LOG_INF("Starting Beacon Demo");
 
-	struct device *dev = device_get_binding("HTS221");
+	/* 
+	 *  see ./build/zephyr/include/generated/generated_dts_board.conf
+	 */
+	struct device *dev = device_get_binding(DT_INST_0_ST_HTS221_LABEL);
 	if (dev == NULL) {
-		LOG_ERR("Could not get HTS221 device\n");
+		LOG_ERR("Could not get HTS221 device: %s", DT_INST_0_ST_HTS221_LABEL);
 		return;
 	} else {
-		LOG_INF("HTS221 found\n");
+		LOG_INF("HTS221 found");
 	}
 
+#if 0
 	/* Initialize the Bluetooth Subsystem */
-/*	err = bt_enable(bt_ready);
+	int err = bt_enable(bt_ready);
 	if (err) {
 		LOG_ERR("Bluetooth init failed (err %d)\n", err);
-	}*/
+	}
+#else
+	(void) bt_ready;
+#endif
 
 	while (!IS_ENABLED(CONFIG_HTS221_TRIGGER)) {
 		process_sample(dev);
 		k_sleep(K_MSEC(2000));
-		LOG_DBG("...\n");
+		//LOG_INF("...");
 	}
 }
