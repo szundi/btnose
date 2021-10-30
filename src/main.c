@@ -56,7 +56,6 @@ static void bt_ready(int err)
 
 	LOG_INF("Bluetooth initialized\n");
 
-	/* Start advertising */
 	err = bt_le_adv_start(BT_LE_ADV_NCONN, ad, ARRAY_SIZE(ad),
 			      sd, ARRAY_SIZE(sd));
 	if (err) {
@@ -68,61 +67,59 @@ static void bt_ready(int err)
 }
 
 
-
-static void process_sample(struct device *dev)
+static void process_sample(const struct device *dev)
 {
 	static unsigned int obs;
 	struct sensor_value temp, hum;
 	if (sensor_sample_fetch(dev) < 0) {
-		LOG_ERR("Sensor sample update error\n");
+		LOG_ERR("Sensor sample update error");
 		return;
 	}
 
 	if (sensor_channel_get(dev, SENSOR_CHAN_AMBIENT_TEMP, &temp) < 0) {
-		LOG_ERR("Cannot read HTS221 temperature channel\n");
+		LOG_ERR("Cannot read temperature channel");
 		return;
 	}
 
 	if (sensor_channel_get(dev, SENSOR_CHAN_HUMIDITY, &hum) < 0) {
-		LOG_ERR("Cannot read HTS221 humidity channel\n");
+		LOG_ERR("Cannot read humidity channel");
 		return;
 	}
 
 	++obs;
-	LOG_INF("Observation:%u\n", obs);
+	LOG_INF("Observation: %u", obs);
 
 	/* display temperature */
-	LOG_INF("Temperature:%.1f C\n", sensor_value_to_double(&temp));
+	LOG_INF("Temperature: %d.%02d C", temp.val1, temp.val2);
 
 	/* display humidity */
-	LOG_INF("Relative Humidity:%.1f%%\n",
-	       sensor_value_to_double(&hum));
+	LOG_INF("Relative Humidity: %d.%02d%%", hum.val1, hum.val2);
+
 }
 
 
 
 void main(void)
 {
-	int err;
-	LOG_INF("Starting Beacon Demo\n");
+	LOG_INF("Starting BT Nose Beacon Demo\n");
 
-	struct device *dev = device_get_binding("HTS221");
+	const struct device *dev = device_get_binding("SHT3XD");
 	if (dev == NULL) {
-		LOG_ERR("Could not get HTS221 device\n");
+		LOG_ERR("Could not get the sensor device descriptor\n");
 		return;
 	} else {
-		LOG_INF("HTS221 found\n");
+		LOG_INF("Sensor found\n");
 	}
 
 	/* Initialize the Bluetooth Subsystem */
-/*	err = bt_enable(bt_ready);
+	int err = bt_enable(bt_ready);
 	if (err) {
 		LOG_ERR("Bluetooth init failed (err %d)\n", err);
-	}*/
+	}
 
 	while (!IS_ENABLED(CONFIG_HTS221_TRIGGER)) {
 		process_sample(dev);
 		k_sleep(K_MSEC(2000));
-		LOG_DBG("...\n");
+		LOG_DBG("...");
 	}
 }

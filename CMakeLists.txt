@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13.1)
+cmake_minimum_required(VERSION 3.20.1)
 
 set(BOARD_ROOT ${CMAKE_CURRENT_LIST_DIR})
 set(BOARD btnose)

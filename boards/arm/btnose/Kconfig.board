@@ -1,4 +1,4 @@
 
 config  BOARD_BTNOSE
 	bool "btnose"
-	depends on SOC_NRF52832_QFAA
+	depends on SOC_NRF52805_CAAA
