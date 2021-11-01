@@ -29,10 +29,6 @@
 	status = "okay";
 };
 
-&gpiote {
-	status = "okay";
-};
-
 &gpio0 {
 	status = "okay";
 };

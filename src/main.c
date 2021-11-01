@@ -18,6 +18,7 @@
 #include <drivers/sensor.h>
 #include <drivers/watchdog.h>
 #include <drivers/adc.h>
+#include <drivers/gpio.h>
 #include <sys/reboot.h>
 
 #include <logging/log.h>
@@ -58,6 +59,13 @@ static const struct bt_data sd[] = {
 };
 
 
+#define BLINK_MS	10
+struct device *gpio = NULL;
+void blink() {
+	gpio_pin_set(gpio, 20, 1);
+	k_sleep(K_MSEC(BLINK_MS));
+	gpio_pin_set(gpio, 20, 0);
+}
 
 
 void reboot(const char *reboot_err_message) {
@@ -154,6 +162,8 @@ static void process_sample(const struct device *dev)
 
 	statedata.serial++;
 	bt_restart_adv();
+
+	blink();
 }
 
 
@@ -224,6 +234,14 @@ void main(void)
 
 	init_watchdog();
 
+	gpio = device_get_binding("GPIO_0");
+	if (gpio == NULL) {
+		reboot("Could not get the gpio descriptor\n");
+		return;
+	}
+	gpio_pin_configure(gpio, 20, GPIO_OUTPUT | GPIO_ACTIVE_LOW);
+	gpio_pin_set(gpio, 20, 0);
+
 	const struct device *dev = device_get_binding("SHT3XD");
 	if (dev == NULL) {
 		reboot("Could not get the sensor device descriptor\n");
@@ -244,7 +262,7 @@ void main(void)
 	statedata.serial = 0;
 	statedata.temperature_fieldcode = 0x10;
 	statedata.temperature_value = 0xFFFF; // 0xFFFF = no data
-	statedata.humidity_fieldcode = 0x30; // means 0x18 + 1 - 1 = 1x freq channel
+	statedata.humidity_fieldcode = 0x30; 
 	statedata.humidity_value = 0xFFFF; // 0xFFFF = no data
 	statedata.battery_fieldcode = 0xBA; 
 	statedata.battery_value = 0xFF; // 0xFF = no data
@@ -252,16 +270,16 @@ void main(void)
 	statedata.vcc_value = 0xFF; // 0xFF = no data*/
 	LOG_DBG("BT statedata size == %d", sizeof(statedata));
 
-	uint32_t cycles_max_before_reboot = 10;
+	uint32_t cycles_max_before_reboot = 1000;
 	while (true) {
 		process_sample(dev);
-		k_sleep(K_MSEC(1666));
-		LOG_DBG("...");
-		k_sleep(K_MSEC(1666));
-		LOG_DBG("...");
-		k_sleep(K_MSEC(1666));
-		LOG_DBG("...");
 		wdt_feed(wdt, wdt_channel_id);
+		k_sleep(K_MSEC(1666));
+		LOG_DBG("...");
+		k_sleep(K_MSEC(1666));
+		LOG_DBG("...");
+		k_sleep(K_MSEC(1666));
+		LOG_DBG("...");
 		if (--cycles_max_before_reboot == 0) {
 			reboot("Uptime too long :) reboot!");
 		}
