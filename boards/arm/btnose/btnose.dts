@@ -45,28 +45,12 @@
 	sda-pin = <16>;
 	scl-pin = <12>;
 
-	/*hts221@5f {
-		compatible = "st,hts221";
-		reg = <0x5f>;
-		drdy-gpios = <&gpio0 4 0>;
-		label = "HTS221";
-	};*/
-
     sht3xd@44 {
 		compatible = "sensirion,sht3xd";
 		reg = <0x44>;
 		label = "SHT3XD";
 	};
 
-};
-
-
-&uart0 {
-	status = "okay";
-	compatible = "nordic,nrf-uart";
-	current-speed = <115200>;
-	tx-pin = <5>;
-	rx-pin = <11>;
 };
 
 &flash0 {
