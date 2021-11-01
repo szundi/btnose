@@ -255,7 +255,11 @@ void main(void)
 	uint32_t cycles_max_before_reboot = 10;
 	while (true) {
 		process_sample(dev);
-		k_sleep(K_MSEC(5000));
+		k_sleep(K_MSEC(1666));
+		LOG_DBG("...");
+		k_sleep(K_MSEC(1666));
+		LOG_DBG("...");
+		k_sleep(K_MSEC(1666));
 		LOG_DBG("...");
 		wdt_feed(wdt, wdt_channel_id);
 		if (--cycles_max_before_reboot == 0) {
